@@ -18,7 +18,11 @@ const getUrl = async (req, res) => {
 const showUrl = async (req, res) => {
   try {
     const { shortCode } = req.params;
-    const url = await Url.findOne({ shortCode });
+    const url = await Url.findOneAndUpdate(
+      { shortCode },
+      { $inc: { clickCount: 1 } },
+      { returnDocument: "after" },
+    );
     if (!url) {
       return res.status(404).json({ error: "Short URL not found" });
     }
@@ -28,4 +32,22 @@ const showUrl = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-export { getUrl, showUrl };
+
+const getAnalytics = async (req, res) => {
+  try {
+    const shortCode = req.params.shortCode;
+    const url = await Url.findOne({ shortCode });
+    if (!url) {
+      return res.status(404).json({ error: "Short URL not found" });
+    }
+    console.log(url);
+    res.status(200).json({
+      originalUrl: url.originalUrl,
+      shortCode: url.shortCode,
+      clickCount: url.clickCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export { getUrl, showUrl, getAnalytics };
