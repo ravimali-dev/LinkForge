@@ -2,7 +2,7 @@ import express from "express";
 import connectDB from './config/db.js'
 import dotenv from "dotenv";
 import urlRouter from "./routes/url.routes.js";
-import {showUrl} from './controllers/url.controllers.js'
+import {showUrl,getAnalytics} from './controllers/url.controllers.js'
 
 dotenv.config();
 
@@ -12,6 +12,7 @@ app.use(express.json());
 
 app.use('/api/url', urlRouter); 
 app.get('/:shortCode', showUrl);
+app.get('/analytics/:shortCode', getAnalytics)
 
 // index.js
 connectDB().then(() => {
