@@ -9,7 +9,11 @@ const urlSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true
-  }
+  },
+  clickCount: {
+  type: Number,
+  default: 0
+}
 });
 
 const Url = mongoose.model('Url', urlSchema);
