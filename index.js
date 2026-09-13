@@ -2,6 +2,7 @@ import express from "express";
 import cors from 'cors';
 import connectDB from './config/db.js';
 import dotenv from "dotenv";
+import cookieParser from 'cookie-parser'
 import urlRouter from "./routes/url.routes.js";
 import redirectRouter from "./routes/redirect.routes.js";
 import auth from './routes/auth.routes.js'
@@ -11,6 +12,7 @@ dotenv.config();
 const app = express();
 const port = 8001;
 app.use(express.json());
+app.use(cookieParser());
 
 
 app.use(cors({
