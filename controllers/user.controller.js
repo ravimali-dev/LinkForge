@@ -65,14 +65,35 @@ const loginUser = async (req, res) => {
       })
       .json({
         user: loggedInUser,
-        message: "User logged in successfully",
+        message: "User logged out in successfully",
       });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+const logoutUser = async (req, res) => {
+  try {
+    let user = req.user;
+    user.refreshToken = null;
+    await user.save();
+    res
+      .status(200)
+      .clearCookie("accessToken",{
+        httpOnly: true,
+        secure: false, // dev me false, production me true
 
+      })
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: false,
+      })
+      .json({
+        message: "User logout in successfully",
+      });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
-
-export { registerUser, loginUser  };
+export { registerUser, loginUser,logoutUser  };
