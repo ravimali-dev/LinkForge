@@ -1,6 +1,6 @@
 import { Router } from "express";
 import rateLimit from 'express-rate-limit';
-import { getUrl, getAnalytics } from '../controllers/url.controllers.js';
+import { getUrl, getAnalytics } from '../controllers/url.controller.js';
 
 const router = Router();
 
