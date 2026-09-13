@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'
 
 const UserSchema = new mongoose.Schema({
-  fullname: {
+  fullName: {
     type: String,
     maxLength: 100,
     required: true,
@@ -46,5 +47,34 @@ UserSchema.pre("save", async function (next) {
     next(error);
   }
 });
+
+UserSchema.methods.generateAccessToken = function(){
+    return jwt.sign(
+        {
+            _id: this._id,
+            email: this.email,
+            username: this.username,
+            fullName: this.fullName
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        }
+    )
+}
+UserSchema.methods.generateRefreshToken = function(){
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+    }
+  )
+}
+
+
+
 
 export const User = mongoose.model("User", UserSchema);
