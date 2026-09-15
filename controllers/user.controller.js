@@ -1,4 +1,5 @@
 import { User } from "../models/user.models.js";
+import jwt from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
   try {
@@ -114,19 +115,21 @@ const logoutUser = async (req, res) => {
 const refreshAccessToken = async (req, res) => {
   try {
     // 1. cookie se refreshToken nikalo
-    const incomingRefreshToken = req.cookie.refreshAccessToken;
+    const incomingRefreshToken = req.cookies.refreshToken;
     // 2. na mile to 401
-    if (!refreshAccessToken) {
+    if (!incomingRefreshToken) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // 3. jwt.verify() se decode karo
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-    );
+   let decodedToken;
+try {
+  decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+} catch (err) {
+  return res.status(401).json({ message: "Invalid or expired refresh token" });
+}
     // 4. decoded._id se user dhoondo
-    const user = User.findById(decodedToken._id);
+    const user = await User.findById(decodedToken._id);
     // 5. user na mile to 401
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -134,16 +137,14 @@ const refreshAccessToken = async (req, res) => {
     // 6. DB wala refreshToken aur cookie wala match karo
     // 7. match na ho to 401
     if (incomingRefreshToken !== user.refreshToken) {
-      res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // 8. naye tokens generate karo, save karo, cookies set karo, response bhejo
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-    const options = {
-      httpOnly: true,
-      secure: false,
-    };
+    user.refreshToken = refreshToken;
+    await user.save();
     const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken",
     );
@@ -162,11 +163,11 @@ const refreshAccessToken = async (req, res) => {
       })
       .json({
         user: loggedInUser,
-        message: "User logged in successfully",
+        message: "Access token refreshed successfully",
       });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+   res.status(500).json({ message: error.message });
   }
 };
 
-export { registerUser, loginUser, logoutUser };
+export { registerUser, loginUser, logoutUser, refreshAccessToken };
