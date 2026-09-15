@@ -11,12 +11,29 @@ const registerUser = async (req, res) => {
       return res.status(409).json("User allReady existes");
     }
     const user = await User.create({ username, fullName, email, password });
-    console.log(user)
-    res.status(201).json({
-      username: user.username,
-      email: user.email,
-      fullName: user.fullName,
-    });
+     const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res
+      .status(201)
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: false, // dev me false, production me true
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json({
+        "username": user.username,
+        "email": user.email,
+        "fullName": user.fullName,
+        message: "User registered successfully",
+      });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -28,17 +45,17 @@ const loginUser = async (req, res) => {
     const { username, email, password } = req.body;
 
     if ((!username && !email) || !password) {
-      return res.status(400).json("username or email and password required");
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     const user = await User.findOne({ $or: [{ email }, { username }] });
     if (!user) {
-      return res.status(404).json("User not found");
+     return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
-      return res.status(401).json("password is wrong");
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const accessToken = user.generateAccessToken();
@@ -65,7 +82,7 @@ const loginUser = async (req, res) => {
       })
       .json({
         user: loggedInUser,
-        message: "User logged out in successfully",
+        message: "User logged in successfully",
       });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -89,7 +106,7 @@ const logoutUser = async (req, res) => {
         secure: false,
       })
       .json({
-        message: "User logout in successfully",
+        message: "User logged out successfully",
       });
   } catch (error) {
     res.status(500).json({ message: error.message });
