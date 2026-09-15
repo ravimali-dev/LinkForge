@@ -1,16 +1,26 @@
 import { Router } from "express";
-import rateLimit from 'express-rate-limit';
-import { getUrl, getAnalytics } from '../controllers/url.controller.js';
+import rateLimit from "express-rate-limit";
+
+import { getUrl, getAnalytics } from "../controllers/url.controller.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-    message: "Too many requests, please try again later"
-}); 
+    message: {
+        success: false,
+        message: "Too many requests, please try again later.",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
-router.post('/', limiter, getUrl);
-router.get('/analytics/:shortCode', getAnalytics);
+// Create short URL
+router.post("/", verifyJWT, limiter, getUrl);
+
+// Get URL analytics
+router.get("/analytics/:shortCode", verifyJWT, limiter, getAnalytics);
 
 export default router;
