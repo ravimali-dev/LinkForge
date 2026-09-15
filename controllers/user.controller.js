@@ -5,7 +5,7 @@ const registerUser = async (req, res) => {
   try {
     const { username, email, password, fullName } = req.body;
     if (!username || !email || !password || !fullName) {
-      return res.status(400).json("allfield are required");
+      return res.status(400).json({message: "All fields are required"});
     }
     const existedUse = await User.findOne({ $or: [{ email }, { username }] });
     if (existedUse) {
