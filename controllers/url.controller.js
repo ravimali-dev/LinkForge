@@ -12,7 +12,7 @@ const getUrl = async (req, res) => {
 
     const shortCode = customAlias ? customAlias : nanoid(6);
 
-    const url = await Url.create({ originalUrl, shortCode });
+    const url = await Url.create({ originalUrl, shortCode, owner: req.user._id });
 
     res.status(201).json({ shortCode: url.shortCode });
   } catch (error) {
@@ -53,6 +53,10 @@ const getAnalytics = async (req, res) => {
 
     if (!url) {
       return res.status(404).json({ error: "Short URL not found" });
+    }
+    console.log("owner:", url.owner, "user:", req.user._id);
+    if(url.owner.toString() !== req.user._id.toString()){
+      return res.status(403).json({ error: "Not authorized" });
     }
 
     res.status(200).json({
