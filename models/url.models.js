@@ -14,7 +14,7 @@ const urlSchema = new mongoose.Schema({
   type: Number,
   default: 0
 },
-createdBy: {
+owner: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "User",
 }
