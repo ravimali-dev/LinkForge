@@ -2,9 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const urlSchema = new Schema(
   {
-    url: {
+    originalUrl: {
       type: String,
-       required: true
+       required: true,
+       unique: true,
     },
     shortcode: {
       type: String,
