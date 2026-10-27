@@ -13,21 +13,36 @@ const createShortUrl = async (req, res) => {
       return res.status(400).json({ error: "url is not valid" });
     }
 
+    const findUrl = await Url.findOne({ originalUrl });
+    if (findUrl) {
+      return res.status(200).json({
+        shortUrl: `${BASE_URL}/${findUrl.shortcode}`,
+      });
+    }
+
     for (let attempts = 0; attempts < 5; attempts++) {
-      let shortcode = generateRandomMix(6);
+      const shortcode = generateRandomMix(6);
       try {
-        await Url.create({ url: originalUrl, shortcode });
+        await Url.create({ originalUrl, shortcode });
         return res.status(201).json({
           shortUrl: `${BASE_URL}/${shortcode}`,
         });
       } catch (error) {
-        if (error.code === 11000) {
+        if (error.code === 11000 && error.keyPattern?.shortcode) {
           continue;
+        }
+
+        if (error.code === 11000 && error.keyPattern?.originalUrl) {
+          const existing = await Url.findOne({ originalUrl });
+          return res.status(200).json({
+            shortUrl: `${BASE_URL}/${existing.shortcode}`,
+          });
         }
 
         throw error;
       }
     }
+
     return res.status(500).json({
       error: "Could not generate a unique shortcode",
     });
@@ -36,12 +51,11 @@ const createShortUrl = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
 const showShortCode = async (req, res) => {
   try {
-    const shortcode = req.params?.shortcode;
-    let urlData = await Url.findOneAndUpdate(
-      { shortcode: shortcode },
+    const { shortcode } = req.params;
+    const urlData = await Url.findOneAndUpdate(
+      { shortcode },
       { $inc: { count: 1 } },
       { returnDocument: "after" },
     );
@@ -49,12 +63,10 @@ const showShortCode = async (req, res) => {
       return res.status(404).json({ error: "short URL not found" });
     }
 
-    console.log(urlData.count);
-
-    res.redirect(`${urlData.url}`);
+    res.redirect(`${urlData.originalUrl}`);
   } catch (error) {
-    console.error(error);
-  return res.status(500).json({ error: "Internal server error" });
+    console.error("Error redirecting short URL:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
