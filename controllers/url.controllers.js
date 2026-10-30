@@ -8,6 +8,9 @@ const createShortUrl = async (req, res) => {
     if (!originalUrl) {
       return res.status(400).json({ error: "url is required" });
     }
+    if (typeof originalUrl !== "string") {
+  return res.status(400).json({ error: "url must be a string" });
+}
 
     if (!isValidUrl(originalUrl)) {
       return res.status(400).json({ error: "url is not valid" });
