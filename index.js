@@ -1,6 +1,6 @@
 import express from "express";
 import { connectDB } from "./config/db.js";
-import { PORT, BASE_URL } from "./config/env.js";
+import { PORT, BASE_URL, JWT_SECRET } from "./config/env.js";
 import urlRouter from "./routes/url.routes.js";
 import authRouter from './routes/auth.routes.js'
 const app = express();
@@ -23,7 +23,12 @@ app.use((err, req, res, next) => {
 
 
 if(!BASE_URL){
-    console.error(" BASE_URL missing in .env");
+    console.error("BASE_URL missing in .env");
+    process.exit(1);
+}
+
+if(!JWT_SECRET){
+    console.error("JWT_SECRET missing in .env");
     process.exit(1);
 }
 connectDB()
