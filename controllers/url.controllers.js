@@ -1,4 +1,4 @@
-import { Url } from "../models/url.model.js";
+import { Url } from "../models/url.models.js";
 import { generateRandomMix, isValidUrl } from "../utils/helpers.js";
 import { BASE_URL } from "../config/env.js";
 
