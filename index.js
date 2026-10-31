@@ -2,10 +2,12 @@ import express from "express";
 import { connectDB } from "./config/db.js";
 import { PORT, BASE_URL } from "./config/env.js";
 import urlRouter from "./routes/url.routes.js";
-
+import authRouter from './routes/auth.routes.js'
 const app = express();
 app.use(express.json());
 
+
+app.use("/auth", authRouter); 
 app.use("/", urlRouter);
 
 
