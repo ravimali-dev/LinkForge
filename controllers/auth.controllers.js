@@ -1,4 +1,6 @@
 import { User } from "../models/user.models.js";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/env.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -42,7 +44,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-
 const loginUser = async (req, res) => {
   try {
     const { email, username, password } = req.body ?? {};
@@ -67,8 +68,11 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ error: "invalid credentials" });
     }
 
+    const token = user.generateToken();
+
     return res.status(200).json({
       message: "Login successful",
+      token,
       user: { id: user._id, username: user.username, email: user.email },
     });
   } catch (error) {
