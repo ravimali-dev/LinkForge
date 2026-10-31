@@ -42,4 +42,39 @@ const registerUser = async (req, res) => {
   }
 };
 
-export { registerUser };
+
+const loginUser = async (req, res) => {
+  try {
+    const { email, username, password } = req.body ?? {};
+
+    if ((!username && !email) || !password) {
+      return res
+        .status(400)
+        .json({ error: "username or email, and password are required" });
+    }
+
+    const user = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: "invalid credentials" });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "invalid credentials" });
+    }
+
+    return res.status(200).json({
+      message: "Login successful",
+      user: { id: user._id, username: user.username, email: user.email },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { registerUser, loginUser };
