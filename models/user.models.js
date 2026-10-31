@@ -1,6 +1,7 @@
 import mongoose, {Schema} from "mongoose";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from "../config/env.js";
 
 const UserSchema = new Schema(
   {
@@ -35,6 +36,10 @@ UserSchema.pre("save", async function () {
 
 UserSchema.methods.comparePassword = async function (plainPassword) {
   return await bcrypt.compare(plainPassword, this.password);
+};
+
+UserSchema.methods.generateToken = function () {
+  return jwt.sign({ id: this._id}, JWT_SECRET, { expiresIn: "1h" });
 };
 
 
