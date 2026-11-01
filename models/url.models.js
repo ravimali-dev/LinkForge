@@ -4,8 +4,7 @@ const urlSchema = new Schema(
   {
     originalUrl: {
       type: String,
-       required: true,
-       unique: true,
+      required: true,
     },
     shortcode: {
       type: String,
@@ -13,9 +12,14 @@ const urlSchema = new Schema(
       unique: true,
       index: true,
     },
-    count:{
+    count: {
       type: Number,
       default: 0,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {
@@ -23,4 +27,6 @@ const urlSchema = new Schema(
   },
 );
 
-export const Url = mongoose.model('Url', urlSchema)
+urlSchema.index({ originalUrl: 1, owner: 1 }, { unique: true });
+
+export const Url = mongoose.model("Url", urlSchema);
