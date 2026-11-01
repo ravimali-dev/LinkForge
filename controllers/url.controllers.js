@@ -16,7 +16,7 @@ const createShortUrl = async (req, res) => {
       return res.status(400).json({ error: "url is not valid" });
     }
 
-    const findUrl = await Url.findOne({ originalUrl });
+    const findUrl = await Url.findOne({ originalUrl, owner: req.user._id })
     if (findUrl) {
       return res.status(200).json({
         shortUrl: `${BASE_URL}/${findUrl.shortcode}`,
@@ -26,7 +26,7 @@ const createShortUrl = async (req, res) => {
     for (let attempts = 0; attempts < 5; attempts++) {
       const shortcode = generateRandomMix(6);
       try {
-        await Url.create({ originalUrl, shortcode });
+        await Url.create({ originalUrl, shortcode, owner: req.user._id });
         return res.status(201).json({
           shortUrl: `${BASE_URL}/${shortcode}`,
         });
@@ -36,7 +36,7 @@ const createShortUrl = async (req, res) => {
         }
 
         if (error.code === 11000 && error.keyPattern?.originalUrl) {
-          const existing = await Url.findOne({ originalUrl });
+          const existing = await Url.findOne({ originalUrl, owner: req.user._id });
           return res.status(200).json({
             shortUrl: `${BASE_URL}/${existing.shortcode}`,
           });
