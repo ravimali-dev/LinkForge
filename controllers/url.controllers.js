@@ -73,4 +73,16 @@ const showShortCode = async (req, res) => {
   }
 };
 
-export { createShortUrl, showShortCode };
+
+const getMyUrls = async(req, res) => {
+  try {
+    const userId = req.user._id
+    const showUrls = await Url.find({owner: userId})
+    console.log(userId)
+    res.send(showUrls)
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export { createShortUrl, showShortCode, getMyUrls };
