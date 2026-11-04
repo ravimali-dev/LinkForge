@@ -78,8 +78,8 @@ const getMyUrls = async(req, res) => {
   try {
     const userId = req.user._id
     const showUrls = await Url.find({owner: userId})
-    console.log(userId)
-    res.send(showUrls)
+    showUrls.map(urls => urls.shortcode )
+    return res.status(200).json({showUrls})
   } catch (error) {
      console.error(error);
     return res.status(500).json({ error: "Internal server error" });
