@@ -51,7 +51,7 @@ const createShortUrl = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 const showShortCode = async (req, res) => {
@@ -81,7 +81,8 @@ const getMyUrls = async(req, res) => {
     console.log(userId)
     res.send(showUrls)
   } catch (error) {
-    console.log(error);
+     console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
